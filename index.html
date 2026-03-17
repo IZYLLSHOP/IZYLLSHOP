@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>🎀 Izyl's Shop Feedback 🎀</title>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;600&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;font-family:'Quicksand',sans-serif;background:linear-gradient(135deg,#ffd6ec,#ffeaf4,#fff5fa);text-align:center;}
+header{font-family:'Playfair Display',serif;font-size:36px;padding:25px;color:white;background:linear-gradient(90deg,#ff7eb6,#ffb3d9);}
+.card{width:380px;margin:60px auto;padding:35px;border-radius:25px;background:rgba(255,255,255,0.7);box-shadow:0 15px 35px rgba(0,0,0,0.1);}
+input,select,textarea{width:92%;padding:12px;margin:10px;border-radius:12px;border:1px solid #ffc1da;background:#fff9fc;}
+textarea{height:90px;}
+button{background:linear-gradient(90deg,#ff6fb3,#ff9ed0);color:white;border:none;padding:14px;border-radius:20px;font-size:16px;width:100%;cursor:pointer;}
+#preview{border-radius:15px;margin-top:10px;max-width:150px;}
+.stars{display:flex;justify-content:center;flex-direction:row-reverse;font-size:28px;}
+.stars input{display:none;}
+.stars label{color:#ddd;cursor:pointer;}
+.stars input:checked ~ label{color:#ffd700;}
+</style>
+</head>
+<body>
+
+<header>🎀 IZYL'S SHOP FEEDBACK 🎀</header>
+
+<div class="card">
+<form id="feedbackForm">
+<input type="text" id="name" placeholder="Your Name 💗" required>
+
+<select id="product" required>
+<option value="">Select Item 🎀</option>
+<option value="Dress">🎀 Dress</option>
+<option value="Tops">👚 Tops</option>
+<option value="Coords">🧷 Coords</option>
+<option value="Skirt">👗 Skirt</option>
+<option value="Bags">👜 Bags</option>
+</select>
+
+<h3>Rate your experience ⭐</h3>
+<div class="stars">
+<input type="radio" name="rating" value="5" id="star5"><label for="star5">★</label>
+<input type="radio" name="rating" value="4" id="star4"><label for="star4">★</label>
+<input type="radio" name="rating" value="3" id="star3"><label for="star3">★</label>
+<input type="radio" name="rating" value="2" id="star2"><label for="star2">★</label>
+<input type="radio" name="rating" value="1" id="star1"><label for="star1">★</label>
+</div>
+
+<textarea id="message" placeholder="Write something cute 💌"></textarea>
+
+<div>
+<p>Upload proof 📸</p>
+<input type="file" id="photo" accept="image/*" required>
+<img id="preview" style="display:none;">
+</div>
+
+<button type="submit">Send Feedback 💕</button>
+</form>
+</div>
+
+<script>
+const webhookURL = "https://discord.com/api/webhooks/1483394021110976615/XZ8zn1PE4RiaEyhbtUXvpxbjvK5XEIlRG5Kn153bDazZ6FPYgnkFeJPqypHTa-5KhgJe"; // Replace with your webhook
+
+const photoInput = document.getElementById("photo");
+const preview = document.getElementById("preview");
+
+// Show image preview
+photoInput.addEventListener("change", function(){
+  const file = this.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(){
+    preview.src = reader.result;
+    preview.style.display = "block";
+  }
+  reader.readAsDataURL(file);
+});
+
+// Submit form
+document.getElementById("feedbackForm").addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const name = document.getElementById("name").value;
+  const product = document.getElementById("product").value;
+  const message = document.getElementById("message").value;
+  const ratingInput = document.querySelector('input[name="rating"]:checked');
+  const rating = ratingInput ? parseInt(ratingInput.value) : 0;
+  const stars = "⭐".repeat(rating) + "☆".repeat(5 - rating);
+
+  const file = photoInput.files[0];
+  if(!file){ alert("Please upload a picture!"); return; }
+
+  try{
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("payload_json", JSON.stringify({
+      username: "🎀 Izyl's Cute Shop",
+      avatar_url: "https://i.imgur.com/AfFp7pu.png",
+      embeds: [{
+        title: "💌 New Cute Feedback!",
+        description: "✨ Someone loves your shop ✨",
+        color: 16738740,
+        fields: [
+          { name: "👤 Customer", value: name, inline: true },
+          { name: "🛍 Item", value: product, inline: true },
+          { name: "⭐ Rating", value: stars + " (" + rating + "/5)", inline: true },
+          { name: "💬 Message", value: message || "No message 💭" }
+        ],
+        footer: { text: "🎀 Izyl's Shop is loved 🎀" },
+        timestamp: new Date()
+      }]
+    }));
+
+    const response = await fetch(webhookURL, { method: "POST", body: formData });
+    if(!response.ok) throw new Error("Discord webhook failed");
+
+    alert("💖 Sent successfully!");
+    this.reset();
+    preview.style.display = "none";
+
+  } catch(err){
+    console.error(err);
+    alert("❌ Error: " + err.message);
+  }
+});
+</script>
+
+</body>
+</html>
